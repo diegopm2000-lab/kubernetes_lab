@@ -231,7 +231,9 @@ We can add limits (memory & cpu) to our pods
           failureThreshold: 1 # Default is 3
 ```
 
-![Updating](../images/016.png)
+__Kubernetes Deployment Commands__
+
+![Kubernetes Deployment Commands](../images/016.png)
 
 ## 6. Deployment Options
 
