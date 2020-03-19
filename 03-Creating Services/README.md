@@ -171,7 +171,7 @@ kubectl run --generator=deployment/apps.v1 is DEPRECATED and will be removed in 
 deployment.apps/myngnix-standalone created
 ```
 
-### 5.2 Creation of a new pod using a pod yaml file
+### 5.2 Creation of a pod using a pod yaml file
 
 nginx.pod3.yaml
 
@@ -213,7 +213,7 @@ $ kubectl create -f nginx.pod.yml
 pod/my-nginx created
 ```
 
-## 5.3 Creation of a pod using a deployment yaml file
+### 5.3 Creation of a pod using a deployment yaml file
 
 nginx.deployment.yml
 
@@ -458,6 +458,21 @@ nginx-nodeport   NodePort    10.96.222.9   <none>        80:31000/TCP   37s
 
 ```
 
-We can try in the browser: http://localhost:31000
+We can try in the browser, using the Minikube IP: 
+
+Obtaining the Minikube IP:
+
+```shell
+$ minikube ip
+
+172.17.0.2
+```
+
+Trying with the browser...
+
+http://172.17.0.2:31000
+
+And we will get the same result, the welcome page of nginx
 
 
+LoadBalancer can not be tested on Minikube. Better try it on Amazon EKS.
