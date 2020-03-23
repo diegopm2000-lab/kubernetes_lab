@@ -144,3 +144,60 @@ We are forwarding to the host docker daemon. We can execute docker ps, etc...
 
 ## 3. PersistentVolumes and PersistentVolumeClaims
 
+__Defining a PV and PVC__
+
+![Defining a PV and PVC](../images/055.png)
+
+__Defnining a PersistentVolume for Azure__
+
+![Defnining a PersistentVolume for Azure](../images/056.png)
+
+And now, we have to create a PersistentVolumeClaim
+
+__Defining a PersistentVolumeClaim__
+
+![Defining a PersistentVolumeClaim](../images/057.png)
+
+Finally, we need to reference the PVC in the pod
+
+__Using a PersistentVolumeClaim__
+
+![Using a PersistentVolumeClaim](../images/058.png)
+
+## 4. StorageClasses
+
+A StorageClass (SC0) is a type of storage template that can be used to dynamically provision storage
+
+![StorageClass](../images/059.png)
+
+### 4.1 StorageClass Workflow
+
+1. Create Storage Class
+2. Create PersistentVolumeClaim that references StorageClass
+3. Kubernetes uses StorageClass provisioner to provision a PersistentVolume
+4. Storage provisioned, PersistentVolume created and bound to PersistentVolumeClaim
+5. Pod volume references PersistentVolumeClaim
+
+![StorageClass Workflow](../images/060.png)
+
+### 4.2 Detail of manifests
+
+![Defining a Local Storage StorageClass](../images/061.png)
+
+![Defining a Local Storage PersistentVolume](../images/062.png)
+
+![Defining a PersistentVolumeClaim](../images/063.png)
+
+## 5. PersistentVolumes in Action
+
+In this example, we will use Kubernets StatefulSet.
+
+This piece manages the deployment and scaling of a set of Pods, and provides guarantees about the ordering and uniqueness of these Pods.
+
+View the mongo.deployment.yml for more detail
+
+## 6. Summary
+
+![Summary](../images/064.png)
+
+
