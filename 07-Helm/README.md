@@ -684,7 +684,7 @@ description: description of the application
 name: 
 version: version of your Chart (semantic version: Major, Minor, Patch)
 
-__Application example__
+### 3.2 Application example
 
 ![Application example](../images/101.png)
 
@@ -947,6 +947,8 @@ eating-beetle   2               Fri Apr  3 13:03:22 2020        DEPLOYED        
 
 ![Installing Guestbook new Release](../images/109.png)
 
+__Executing rollback__
+
 To execute a rollback, execute:
 
 ```shell
@@ -979,3 +981,177 @@ $ helm delete eating-beetle --purge
 release "eating-beetle" deleted
 ```
 
+### 3.3 A second version of the GuestBook application
+
+![A second version](../images/110.png)
+
+We have built three Charts, one for each tier of the application
+
+![A second version](../images/111.png)
+
+It is possible to mount the three charts in one embbedded
+
+![A second version](../images/112.png)
+
+```shell
+└── guestbook
+    ├── charts
+    │   ├── backend
+    │   │   ├── Chart.yaml
+    │   │   └── templates
+    │   │       ├── backend-secret.yaml
+    │   │       ├── backend-service.yaml
+    │   │       └── backend.yaml
+    │   ├── database
+    │   │   ├── Chart.yaml
+    │   │   └── templates
+    │   │       ├── mongodb-persistent-volume-claim.yaml
+    │   │       ├── mongodb-persistent-volume.yaml
+    │   │       ├── mongodb-secret.yaml
+    │   │       ├── mongodb-service.yaml
+    │   │       └── mongodb.yaml
+    │   └── frontend
+    │       ├── Chart.yaml
+    │       └── templates
+    │           ├── frontend-configmap.yaml
+    │           ├── frontend-service.yaml
+    │           ├── frontend.yaml
+    │           └── ingress.yaml
+    └── Chart.yaml
+```
+
+This chart is called an "umbrella chart"
+
+Installing the chart from one folder up guestbook (second version)
+
+```shell
+$ helm install guestbook
+
+NAME:   solitary-quokka
+LAST DEPLOYED: Fri Apr  3 13:52:21 2020
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/ConfigMap
+NAME             DATA  AGE
+frontend-config  2     0s
+
+==> v1/Deployment
+NAME      READY  UP-TO-DATE  AVAILABLE  AGE
+backend   0/1    1           0          0s
+frontend  0/1    1           0          0s
+mongodb   0/1    1           0          0s
+
+==> v1/PersistentVolume
+NAME               CAPACITY  ACCESS MODES  RECLAIM POLICY  STATUS  CLAIM                STORAGECLASS  REASON  AGE
+mongodb-pv-volume  100Mi     RWO           Retain          Bound   default/mongodb-pvc  manual        0s
+
+==> v1/PersistentVolumeClaim
+NAME         STATUS  VOLUME             CAPACITY  ACCESS MODES  STORAGECLASS  AGE
+mongodb-pvc  Bound   mongodb-pv-volume  100Mi     RWO           manual        0s
+
+==> v1/Pod(related)
+NAME                     READY  STATUS             RESTARTS  AGE
+mongodb-d79d94ff4-n9s2f  0/1    ContainerCreating  0         0s
+mongodb-d79d94ff4-n9s2f  0/1    ContainerCreating  0         0s
+mongodb-d79d94ff4-n9s2f  0/1    ContainerCreating  0         0s
+
+==> v1/Secret
+NAME            TYPE    DATA  AGE
+backend-secret  Opaque  1     0s
+mongodb-secret  Opaque  2     0s
+
+==> v1/Service
+NAME      TYPE       CLUSTER-IP     EXTERNAL-IP  PORT(S)          AGE
+backend   ClusterIP  10.98.220.196  <none>       80/TCP           0s
+frontend  ClusterIP  10.103.170.65  <none>       80/TCP           0s
+mongodb   NodePort   10.105.32.127  <none>       27017:30801/TCP  0s
+
+==> v1beta1/Ingress
+NAME               HOSTS                                           ADDRESS  PORTS  AGE
+guestbook-ingress  frontend.minikube.local,backend.minikube.local  80       0s
+```
+
+Checking:
+
+```shell
+$ kubectl get all
+
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/backend-5cd69cf4f-vjrhb     1/1     Running   0          84s
+pod/frontend-5467d469d7-5pd2v   1/1     Running   0          84s
+pod/mongodb-d79d94ff4-n9s2f     1/1     Running   0          84s
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)           AGE
+service/backend      ClusterIP   10.98.220.196   <none>        80/TCP            84s
+service/frontend     ClusterIP   10.103.170.65   <none>        80/TCP            84s
+service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP           16d
+service/mongodb      NodePort    10.105.32.127   <none>        27017:30801/TCP   84s
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/backend    1/1     1            1           84s
+deployment.apps/frontend   1/1     1            1           84s
+deployment.apps/mongodb    1/1     1            1           84s
+
+NAME                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/backend-5cd69cf4f     1         1         1       84s
+replicaset.apps/frontend-5467d469d7   1         1         1       84s
+replicaset.apps/mongodb-d79d94ff4     1         1         1       84s
+```
+
+Viewing the status
+
+```shell
+$ helm status solitary-quokka
+
+LAST DEPLOYED: Fri Apr  3 13:52:21 2020
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/ConfigMap
+NAME             DATA  AGE
+frontend-config  2     2m42s
+
+==> v1/Deployment
+NAME      READY  UP-TO-DATE  AVAILABLE  AGE
+backend   1/1    1           1          2m42s
+frontend  1/1    1           1          2m42s
+mongodb   1/1    1           1          2m42s
+
+==> v1/PersistentVolume
+NAME               CAPACITY  ACCESS MODES  RECLAIM POLICY  STATUS  CLAIM                STORAGECLASS  REASON  AGE
+mongodb-pv-volume  100Mi     RWO           Retain          Bound   default/mongodb-pvc  manual        2m42s
+
+==> v1/PersistentVolumeClaim
+NAME         STATUS  VOLUME             CAPACITY  ACCESS MODES  STORAGECLASS  AGE
+mongodb-pvc  Bound   mongodb-pv-volume  100Mi     RWO           manual        2m42s
+
+==> v1/Pod(related)
+NAME                     READY  STATUS   RESTARTS  AGE
+mongodb-d79d94ff4-n9s2f  1/1    Running  0         2m42s
+mongodb-d79d94ff4-n9s2f  1/1    Running  0         2m42s
+mongodb-d79d94ff4-n9s2f  1/1    Running  0         2m42s
+
+==> v1/Secret
+NAME            TYPE    DATA  AGE
+backend-secret  Opaque  1     2m42s
+mongodb-secret  Opaque  2     2m42s
+
+==> v1/Service
+NAME      TYPE       CLUSTER-IP     EXTERNAL-IP  PORT(S)          AGE
+backend   ClusterIP  10.98.220.196  <none>       80/TCP           2m42s
+frontend  ClusterIP  10.103.170.65  <none>       80/TCP           2m42s
+mongodb   NodePort   10.105.32.127  <none>       27017:30801/TCP  2m42s
+
+==> v1beta1/Ingress
+NAME               HOSTS                                           ADDRESS     PORTS  AGE
+guestbook-ingress  frontend.minikube.local,backend.minikube.local  172.17.0.2  80     2m42s
+```
+
+Testing in browser: http://frontend.minikube.local
+
+![A second version](../images/113.png)
+
+![A second version](../images/114.png)
