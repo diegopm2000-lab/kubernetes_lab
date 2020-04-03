@@ -664,4 +664,318 @@ cache  plugins  repository  starters
 $ rm -rf /home/<<user>>/.helm
 $ sudo rm /usr/local/bin/helm
 
+```
+
 ![Cleaning Helm](../images/098.png)
+
+## 3. Building Helm Charts
+
+### 3.1 Helm Chart Structure
+
+![Helm Chart Structure](../images/099.png)
+
+__Chart.yaml__
+
+![Chart.yaml](../images/100.png)
+
+apiVersion: Version of Helm Api
+appVersion: Version of the application that you want to install
+description: description of the application
+name: 
+version: version of your Chart (semantic version: Major, Minor, Patch)
+
+__Application example__
+
+![Application example](../images/101.png)
+
+https://github.com/phcollignon/helm/tree/master/lab5_helm_chart_version1
+
+![Application example](../images/102.png)
+
+Chart.yaml
+
+```yaml
+apiVersion: v1
+appVersion: "1.0"
+description: A Helm chart for Guestbook 1.0 
+name: guestbook
+version: 0.1.0
+```
+
+Then, we will create the templates
+
+frontend-service.yaml
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: frontend
+  name: frontend
+spec:
+  ports:
+    - protocol: "TCP"
+      port: 80
+      targetPort: 4200
+  selector:
+    app: frontend
+```
+
+frontend.yaml
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend 
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+     # - image: nginx
+      - image: phico/frontend:1.0
+        imagePullPolicy: Always
+        name: frontend
+        ports:
+        - name: frontend
+          containerPort: 4200
+         # hostPort: 80
+```
+
+ingress.yaml
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: guestbook-ingress
+spec:
+  rules:
+  - host: frontend.minikube.local
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: frontend
+          servicePort: 80
+  - host: backend.minikube.local
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: backend
+          servicePort: 80
+```
+
+__Helm Concepts__
+
+![Helm Release](../images/103.png)
+
+It is possible to install multiple releases of the same app. This need that the artifacts have distinct names in the same kubernetes cluster.
+
+![Release Revision](../images/104.png)
+
+Another concept is the Release revision of the same release, updating the artifacts affected.
+
+![Helm Concepts](../images/105.png)
+
+![Helm Commands](../images/106.png)
+
+__Installing Guestbook Release__
+
+![Installing Guestbook Release](../images/107.png)
+
+Go one directory up from Chart folder and execute:
+
+```
+$ helm install guestbook
+
+NAME:   eating-beetle
+LAST DEPLOYED: Fri Apr  3 12:12:30 2020
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/Deployment
+NAME      READY  UP-TO-DATE  AVAILABLE  AGE
+frontend  0/1    1           0          0s
+
+==> v1/Pod(related)
+NAME                       READY  STATUS             RESTARTS  AGE
+frontend-5988d9f7d5-h55wt  0/1    ContainerCreating  0         0s
+
+==> v1/Service
+NAME      TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
+frontend  ClusterIP  10.101.138.245  <none>       80/TCP   0s
+
+==> v1beta1/Ingress
+NAME               HOSTS                                           ADDRESS  PORTS  AGE
+guestbook-ingress  frontend.minikube.local,backend.minikube.local  80       0s
+```
+
+Check
+
+```shell
+$ kubectl get all
+
+diego@Antares:~/workdir/laboratories/kubernetes_lab/07-Helm$ kubectl get all
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/frontend-5988d9f7d5-h55wt   1/1     Running   0          21s
+
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+service/frontend     ClusterIP   10.101.138.245   <none>        80/TCP    21s
+service/kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP   16d
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/frontend   1/1     1            1           21s
+
+NAME                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/frontend-5988d9f7d5   1         1         1       21s
+```
+
+And
+
+```shell
+$ helm list --short
+
+eating-beetle
+```
+
+Shows the release name generated randomly by Helm.
+
+Viewing the status of the release
+
+```shell
+$ helm status eating-beetle
+
+LAST DEPLOYED: Fri Apr  3 12:12:30 2020
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/Deployment
+NAME      READY  UP-TO-DATE  AVAILABLE  AGE
+frontend  1/1    1           1          3m43s
+
+==> v1/Pod(related)
+NAME                       READY  STATUS   RESTARTS  AGE
+frontend-5988d9f7d5-h55wt  1/1    Running  0         3m43s
+
+==> v1/Service
+NAME      TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
+frontend  ClusterIP  10.101.138.245  <none>       80/TCP   3m43s
+
+==> v1beta1/Ingress
+NAME               HOSTS                                           ADDRESS  PORTS  AGE
+guestbook-ingress  frontend.minikube.local,backend.minikube.local  80       3m43s
+```
+
+NOTE: In minikube running locally, we need add the next lines to our /etc/hosts
+
+```shell
+172.17.0.2 frontend.minikube.local
+172.17.0.2 backend.minikube.local
+```
+
+Trying in webbrowser
+
+http://frontend.minikube.local
+
+![Installing Guestbook Release](../images/108.png)
+
+__Installing a new version of app__
+
+In Chart.yaml, change appVersion 1.0 to 1.1, and the description
+
+```
+apiVersion: v1
+appVersion: "1.1"
+description: A Helm chart for Guestbook 1.1
+name: guestbook
+version: 0.1.0
+```
+
+Do not change the chart version, because the definition is the same
+
+And change in frontend.yaml, the image from phico/frontend:1.0 to phico/frontend:1.1
+
+Execute:
+
+```shell
+$ helm upgrade eating-beetle guestbook
+
+Release "eating-beetle" has been upgraded.
+LAST DEPLOYED: Fri Apr  3 13:03:22 2020
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/Deployment
+NAME      READY  UP-TO-DATE  AVAILABLE  AGE
+frontend  1/1    0           1          50m
+
+==> v1/Pod(related)
+NAME                       READY  STATUS             RESTARTS  AGE
+frontend-5988d9f7d5-h55wt  1/1    Running            0         50m
+frontend-76d584bf78-2zsvx  0/1    ContainerCreating  0         0s
+
+==> v1/Service
+NAME      TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
+frontend  ClusterIP  10.101.138.245  <none>       80/TCP   50m
+
+==> v1beta1/Ingress
+NAME               HOSTS                                           ADDRESS     PORTS  AGE
+guestbook-ingress  frontend.minikube.local,backend.minikube.local  172.17.0.2  80     50m
+```
+
+And check:
+
+```shell
+$ helm list
+
+NAME            REVISION        UPDATED                         STATUS          CHART              APP VERSION     NAMESPACE
+eating-beetle   2               Fri Apr  3 13:03:22 2020        DEPLOYED        guestbook-0.1.0    1.1             default  
+```
+
+![Installing Guestbook new Release](../images/109.png)
+
+To execute a rollback, execute:
+
+```shell
+$ helm rollback eating-beetle 1
+
+Rollback was a success.
+```
+
+```shell
+$ helm list
+
+NAME            REVISION        UPDATED                         STATUS          CHART              APP VERSION     NAMESPACE
+eating-beetle   3               Fri Apr  3 13:07:51 2020        DEPLOYED        guestbook-0.1.0    1.0             default  
+```
+
+```shell
+$ helm history eating-beetle
+
+REVISION        UPDATED                         STATUS          CHART           APP VERSION        DESCRIPTION     
+1               Fri Apr  3 12:12:30 2020        SUPERSEDED      guestbook-0.1.0 1.0                Install complete
+2               Fri Apr  3 13:03:22 2020        SUPERSEDED      guestbook-0.1.0 1.1                Upgrade complete
+3               Fri Apr  3 13:07:51 2020        DEPLOYED        guestbook-0.1.0 1.0                Rollback to 1   
+```
+
+For deleting the release and all the objects related
+
+```shell
+$ helm delete eating-beetle --purge
+
+release "eating-beetle" deleted
+```
+
