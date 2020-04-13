@@ -226,3 +226,114 @@ Modifying Scope using With
 
 ![Modifying Scope using With](../images/135.png)
 
+Controlling Whitespaces and Indents
+
+![Removing Extra Carriage Returns](../images/136.png)
+
+![Removing Extra Carriage Returns](../images/137.png)
+
+![Indent by Template](../images/138.png)
+
+![Indent by Template](../images/139.png)
+
+![Printing with format](../images/140.png)
+
+Logical Operators
+
+![Logical Operators](../images/141.png)
+
+![Logical Operators](../images/142.png)
+
+Flow Control
+
+![Conditions](../images/143.png)
+
+![Loops](../images/144.png)
+
+Variables
+
+![Variables](../images/145.png)
+
+![Why Variables?](../images/146.png)
+
+![Using a variable](../images/147.png)
+
+![Using variable and Global variable](../images/148.png)
+
+Calling Helper Functions and Sub-templates
+
+![Why use helper Functions?](../images/149.png)
+
+![Using a sub-template](../images/150.png)
+
+![Using a sub-template](../images/151.png)
+
+![_helpers.tpl](../images/152.png)
+
+![Indenting a sub-template](../images/153.png)
+
+Notes.txt
+
+![Notes.txt](../images/154.png)
+
+## 3. Managing dependencies
+
+__Packaging a Chart__
+
+![Packaging a Chart](../images/155.png)
+
+__Publishing Charts in Repositories__
+
+![Helm Repository](../images/156.png)
+
+![Publishing in a Repository](../images/157.png)
+
+![Local Repository](../images/158.png)
+
+![Managing Repository List](../images/159.png)
+
+![Managing Repository List](../images/160.png)
+
+__Defining Dependencies__
+
+![Charts Dependencies](../images/161.png)
+
+We need to manage the internal versions of the packages, using the requirements.yaml file
+
+![Charts Dependencies](../images/162.png)
+
+![requirements.yaml](../images/163.png)
+
+![Charts Dependencies](../images/164.png)
+
+![requirements.lock](../images/165.png)
+
+![Charts Dependencies](../images/166.png)
+
+__Adding Conditions & Tags__
+
+Using conditions and tags to select what will be installed.
+
+![Conditions & Tags](../images/167.png)
+
+![Conditions & Tags](../images/168.png)
+
+__Using Existing Helm Charts__
+
+![Analogies](../images/169.png)
+
+![Helm Stable Repository](../images/170.png)
+
+![Helm Stable Repository](../images/171.png)
+
+Using the Command Line
+
+![Using the Command Line](../images/172.png)
+
+__Customizing Existing Charts__
+
+There are two ways:
+
+![First Way](../images/173.png)
+
+![Second Way](../images/174.png)
